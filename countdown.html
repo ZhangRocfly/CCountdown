@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>除夕倒计时</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #1a0a2e 0%, #3d1528 40%, #8b1a1a 100%);
+    overflow: hidden;
+  }
+  .container {
+    text-align: center;
+    z-index: 1;
+  }
+  .title {
+    font-size: clamp(2rem, 6vw, 4rem);
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+  .subtitle {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    color: #ff6b6b;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+  .countdown {
+    display: flex;
+    gap: clamp(0.5rem, 2vw, 2rem);
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .time-block {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 16px;
+    padding: clamp(1rem, 3vw, 2rem) clamp(0.8rem, 2.5vw, 1.8rem);
+    min-width: clamp(80px, 18vw, 140px);
+  }
+  .number {
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 700;
+    color: #ffd700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  }
+  .label {
+    font-size: clamp(0.7rem, 2vw, 1rem);
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.5rem;
+    letter-spacing: 0.2em;
+  }
+  .lantern {
+    position: absolute;
+    font-size: 3rem;
+    animation: swing 3s ease-in-out infinite;
+    opacity: 0.15;
+  }
+  .lantern:nth-child(1) { top: 8%; left: 10%; animation-delay: 0s; }
+  .lantern:nth-child(2) { top: 15%; right: 12%; animation-delay: 0.5s; }
+  .lantern:nth-child(3) { bottom: 12%; left: 15%; animation-delay: 1s; }
+  .lantern:nth-child(4) { bottom: 8%; right: 10%; animation-delay: 1.5s; }
+  @keyframes swing {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+  }
+  .target-date {
+    margin-top: 2rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: clamp(0.8rem, 2vw, 1rem);
+  }
+  .progress-bar {
+    margin-top: 2rem;
+    width: clamp(200px, 60vw, 500px);
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #ffd700);
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+</style>
+</head>
+<body>
+  <div class="lantern">🏮</div>
+  <div class="lantern">🏮</div>
+  <div class="lantern">🏮</div>
+  <div class="lantern">🏮</div>
+
+  <div class="container">
+    <div class="title">🏮 除夕倒计时 🏮</div>
+    <div class="subtitle">2027 · 丁未年 · 腊月三十</div>
+
+    <div class="countdown">
+      <div class="time-block">
+        <div class="number" id="days">--</div>
+        <div class="label">天</div>
+      </div>
+      <div class="time-block">
+        <div class="number" id="hours">--</div>
+        <div class="label">时</div>
+      </div>
+      <div class="time-block">
+        <div class="number" id="minutes">--</div>
+        <div class="label">分</div>
+      </div>
+      <div class="time-block">
+        <div class="number" id="seconds">--</div>
+        <div class="label">秒</div>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+
+    <div class="target-date" id="targetDate"></div>
+  </div>
+
+<script>
+  // === 配置区 ===
+  // 修改这里来设置目标日期
+  const TARGET_DATE = new Date('2027-02-05T00:00:00+08:00').getTime();
+  const START_DATE = new Date('2026-01-01T00:00:00+08:00').getTime();
+  const TARGET_LABEL = '2027年2月5日 除夕';
+
+  document.getElementById('targetDate').textContent = '目标日期：' + TARGET_LABEL;
+
+  function updateCountdown() {
+    const now = Date.now();
+    const diff = TARGET_DATE - now;
+
+    if (diff <= 0) {
+      document.getElementById('days').textContent = 0;
+      document.getElementById('hours').textContent = 0;
+      document.getElementById('minutes').textContent = 0;
+      document.getElementById('seconds').textContent = 0;
+      document.getElementById('progressFill').style.width = '100%';
+      return;
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+
+    document.getElementById('days').textContent = days;
+    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+    const totalDuration = TARGET_DATE - START_DATE;
+    const elapsed = now - START_DATE;
+    const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+    document.getElementById('progressFill').style.width = progress + '%';
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
